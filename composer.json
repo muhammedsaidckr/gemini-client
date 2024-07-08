@@ -1,5 +1,5 @@
 {
-  "name": "google-gemini-php/client",
+  "name": "muhammedsaidckr/gemini-client",
   "description": "Gemini API is a supercharged PHP API client that allows you to interact with the Gemini API",
   "license": "MIT",
   "keywords": [
@@ -15,8 +15,8 @@
   ],
   "authors": [
     {
-      "name": "Fatih AYDIN",
-      "email": "aydinfatih52@gmail.com"
+      "name": "Muhammed Said Çakır",
+      "email": "muhammedsaidckr@gmail.com"
     }
   ],
   "require": {

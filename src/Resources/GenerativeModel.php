@@ -32,6 +32,7 @@ final class GenerativeModel implements GenerativeModelContract
     public function __construct(
         private readonly TransporterContract $transporter,
         ModelType|string $model,
+        public array $systemInstruction = [],
         public array $safetySettings = [],
         public ?GenerationConfig $generationConfig = null,
     ) {
@@ -80,6 +81,7 @@ final class GenerativeModel implements GenerativeModelContract
         $response = $this->transporter->request(
             request: new GenerateContentRequest(
                 model: $this->model,
+                systemInstruction: $this->systemInstruction,
                 parts: $parts,
                 safetySettings: $this->safetySettings,
                 generationConfig: $this->generationConfig,

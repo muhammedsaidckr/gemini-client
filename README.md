@@ -10,7 +10,7 @@
 
 **Gemini PHP** is a community-maintained PHP API client that allows you to interact with the Gemini AI API.
 
-- Fatih AYDIN [github.com/aydinfatih](https://github.com/aydinfatih)
+- Muhammed Said Çakır [github.com/muhammedsaidckr](https://github.com/muhammedsaidckr)
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
