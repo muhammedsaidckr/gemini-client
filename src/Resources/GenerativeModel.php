@@ -32,7 +32,7 @@ final class GenerativeModel implements GenerativeModelContract
     public function __construct(
         private readonly TransporterContract $transporter,
         ModelType|string $model,
-        public string|Blob|array|Content $systemInstruction,
+        public string|Blob|array|Content $systemInstruction = [],
         public array $safetySettings = [],
         public ?GenerationConfig $generationConfig = null,
     ) {

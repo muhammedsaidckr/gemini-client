@@ -6,6 +6,8 @@ namespace Gemini;
 
 use Gemini\Contracts\ClientContract;
 use Gemini\Contracts\TransporterContract;
+use Gemini\Data\Blob;
+use Gemini\Data\Content;
 use Gemini\Data\Model;
 use Gemini\Enums\ModelType;
 use Gemini\Resources\ChatSession;
@@ -33,6 +35,14 @@ final class Client implements ClientContract
     public function generativeModel(ModelType|string $model): GenerativeModel
     {
         return new GenerativeModel(transporter: $this->transporter, model: $model);
+    }
+
+    public static function generativeModelWithSystemInstruction(
+        TransporterContract $transporter,
+        ModelType|string $model,
+        string|Blob|array|Content $systemInstruction
+    ): GenerativeModel {
+        return new GenerativeModel(transporter: $transporter, model: $model, systemInstruction: $systemInstruction);
     }
 
     public function geminiPro(): GenerativeModel
