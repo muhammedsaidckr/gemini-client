@@ -47,10 +47,7 @@ class GenerateContentRequest extends Request
     protected function defaultBody(): array
     {
         return [
-            'system_instruction' => array_map(
-                static fn (Content $content): array => $content->toArray(),
-                $this->partsToContents(...$this->systemInstruction)
-            ),
+            'system_instruction' => $this->systemInstruction,
             'contents' => array_map(
                 static fn (Content $content): array => $content->toArray(),
                 $this->partsToContents(...$this->parts)
