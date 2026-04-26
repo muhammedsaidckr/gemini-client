@@ -9,7 +9,7 @@ use Gemini\Contracts\Arrayable;
 /**
  * A list of floats representing an embedding.
  *
- * https://ai.google.dev/api/rest/v1/ContentEmbedding
+ * https://ai.google.dev/api/embeddings#contentembedding
  */
 final class ContentEmbedding implements Arrayable
 {
@@ -18,8 +18,7 @@ final class ContentEmbedding implements Arrayable
      */
     public function __construct(
         public readonly array $values,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array{ values: array<float> }  $attributes

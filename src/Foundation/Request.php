@@ -54,7 +54,7 @@ abstract class Request
      */
     public function toRequest(string $baseUrl, array $headers = [], array $queryParams = []): RequestInterface
     {
-        $psr17Factory = new Psr17Factory();
+        $psr17Factory = new Psr17Factory;
 
         $uri = $baseUrl.$this->resolveEndpoint();
 
@@ -70,7 +70,7 @@ abstract class Request
 
         $body = null;
 
-        if ($this->method === Method::POST) {
+        if (in_array($this->method, [Method::POST, Method::PATCH, Method::PUT], true)) {
             $parameters = match (true) {
                 method_exists($this, 'body') => $this->body(),
                 default => [],
@@ -82,7 +82,9 @@ abstract class Request
         $request = $psr17Factory->createRequest($this->method->value, $uri);
 
         if ($body instanceof StreamInterface) {
-            $request = $request->withBody($body);
+            $request = $request
+                ->withHeader('Content-Type', 'application/json')
+                ->withBody($body);
         }
 
         foreach ($headers as $name => $value) {

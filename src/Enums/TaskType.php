@@ -7,7 +7,7 @@ namespace Gemini\Enums;
 /**
  * Type of task for which the embedding will be used.
  *
- * https://ai.google.dev/api/rest/v1/TaskType
+ * https://ai.google.dev/api/embeddings#tasktype
  */
 enum TaskType: string
 {
@@ -40,4 +40,19 @@ enum TaskType: string
      * Specifies that the embeddings will be used for clustering.
      */
     case CLUSTERING = 'CLUSTERING';
+
+    /**
+     * Specifies that the given text will be used for question answering.
+     */
+    case QUESTION_ANSWERING = 'QUESTION_ANSWERING';
+
+    /**
+     * Specifies that the given text will be used for fact verification.
+     */
+    case FACT_VERIFICATION = 'FACT_VERIFICATION';
+
+    /**
+     * Specifies that the given text will be used for code retrieval.
+     */
+    case CODE_RETRIEVAL_QUERY = 'CODE_RETRIEVAL_QUERY';
 }

@@ -8,7 +8,7 @@ namespace Gemini\Enums;
  * The category of a rating.
  * These categories cover various kinds of harms that developers may wish to adjust.
  *
- * https://ai.google.dev/api/rest/v1/HarmCategory
+ * https://ai.google.dev/api/generate-content#harmcategory
  */
 enum HarmCategory: string
 {
@@ -66,4 +66,9 @@ enum HarmCategory: string
      * Dangerous content.
      */
     case HARM_CATEGORY_DANGEROUS_CONTENT = 'HARM_CATEGORY_DANGEROUS_CONTENT';
+
+    /**
+     * Content that may be used to harm civic integrity.
+     */
+    case HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY';
 }

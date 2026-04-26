@@ -7,6 +7,7 @@ namespace Gemini\Requests\GenerativeModel;
 use Gemini\Concerns\HasContents;
 use Gemini\Data\Blob;
 use Gemini\Data\Content;
+use Gemini\Data\UploadedFile;
 use Gemini\Enums\Method;
 use Gemini\Foundation\Request;
 use Gemini\Requests\Concerns\HasJsonBody;
@@ -19,14 +20,12 @@ class CountTokensRequest extends Request
     protected Method $method = Method::POST;
 
     /**
-     * @param  array<string|Blob|array<string|Blob>|Content>  $parts
+     * @param  array<string|Blob|array<string|Blob>|Content|UploadedFile>  $parts
      */
     public function __construct(
         protected readonly string $model,
         protected readonly array $parts
-    ) {
-
-    }
+    ) {}
 
     public function resolveEndpoint(): string
     {

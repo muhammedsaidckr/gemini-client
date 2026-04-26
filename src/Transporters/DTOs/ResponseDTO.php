@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Gemini\Transporters\DTOs;
 
 /**
- * @template-covariant TData of array
+ * @template TData of array
  *
  * @internal
  */
@@ -18,8 +18,7 @@ final class ResponseDTO
      */
     public function __construct(
         private readonly array $data,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a new ResponseDTO value object from the given data.

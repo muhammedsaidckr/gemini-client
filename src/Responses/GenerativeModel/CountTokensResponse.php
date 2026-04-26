@@ -8,7 +8,7 @@ use Gemini\Contracts\ResponseContract;
 use Gemini\Testing\Responses\Concerns\Fakeable;
 
 /**
- * https://ai.google.dev/api/rest/v1/models/countTokens#response-body
+ * https://ai.google.dev/api/rest/v1beta/models/countTokens#response-body
  */
 final class CountTokensResponse implements ResponseContract
 {
@@ -16,8 +16,7 @@ final class CountTokensResponse implements ResponseContract
 
     private function __construct(
         public readonly int $totalTokens,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array{ totalTokens: int }  $attributes

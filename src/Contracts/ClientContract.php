@@ -4,23 +4,38 @@ declare(strict_types=1);
 
 namespace Gemini\Contracts;
 
+use BackedEnum;
+use Gemini\Contracts\Resources\CachedContentsContract;
 use Gemini\Contracts\Resources\ChatSessionContract;
 use Gemini\Contracts\Resources\EmbeddingModalContract;
+use Gemini\Contracts\Resources\FilesContract;
+use Gemini\Contracts\Resources\FileSearchStoresContract;
 use Gemini\Contracts\Resources\GenerativeModelContract;
 use Gemini\Contracts\Resources\ModelContract;
-use Gemini\Enums\ModelType;
 
 interface ClientContract
 {
     public function models(): ModelContract;
 
-    public function generativeModel(ModelType|string $model): GenerativeModelContract;
+    public function generativeModel(BackedEnum|string $model): GenerativeModelContract;
 
+    /**
+     * @deprecated Use `generativeModel()`
+     */
     public function geminiPro(): GenerativeModelContract;
 
-    public function geminiProVision(): GenerativeModelContract;
+    /**
+     * @deprecated Use `generativeModel()`
+     */
+    public function geminiFlash(): GenerativeModelContract;
 
-    public function embeddingModel(ModelType|string $model = ModelType::EMBEDDING): EmbeddingModalContract;
+    public function embeddingModel(BackedEnum|string $model): EmbeddingModalContract;
 
-    public function chat(ModelType|string $model = ModelType::GEMINI_PRO): ChatSessionContract;
+    public function chat(BackedEnum|string $model): ChatSessionContract;
+
+    public function files(): FilesContract;
+
+    public function cachedContents(): CachedContentsContract;
+
+    public function fileSearchStores(): FileSearchStoresContract;
 }

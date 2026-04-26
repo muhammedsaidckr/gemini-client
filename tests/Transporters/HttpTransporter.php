@@ -1,6 +1,5 @@
 <?php
 
-use Gemini\Enums\ModelType;
 use Gemini\Exceptions\ErrorException;
 use Gemini\Exceptions\TransporterException;
 use Gemini\Exceptions\UnserializableResponse;
@@ -21,7 +20,7 @@ beforeEach(function () {
 
     $this->http = new HttpTransporter(
         client: $this->client,
-        baseUrl: 'https://generativelanguage.googleapis.com/v1/',
+        baseUrl: 'https://generativelanguage.googleapis.com/v1beta/',
         headers: [
             'x-goog-api-key' => 'foo',
         ],
@@ -34,7 +33,7 @@ beforeEach(function () {
 });
 
 test('request', function () {
-    $request = new ListModelRequest();
+    $request = new ListModelRequest;
 
     $response = new Response(200, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
         'test',
@@ -48,7 +47,7 @@ test('request', function () {
                 ->and($request->getUri())
                 ->getHost()->toBe('generativelanguage.googleapis.com')
                 ->getScheme()->toBe('https')
-                ->getPath()->toBe('/v1/models');
+                ->getPath()->toBe('/v1beta/models');
 
             return true;
         })->andReturn($response);
@@ -57,7 +56,7 @@ test('request', function () {
 });
 
 test('request response', function () {
-    $request = new ListModelRequest();
+    $request = new ListModelRequest;
 
     $data = ListModelResponse::fake()->toArray();
     $response = new Response(200, ['Content-Type' => 'application/json; charset=utf-8'], json_encode($data, JSON_PRESERVE_ZERO_FRACTION));
@@ -73,7 +72,7 @@ test('request response', function () {
 });
 
 test('request server user errors', function () {
-    $request = new ListModelRequest();
+    $request = new ListModelRequest;
 
     $response = new Response(400, ['Content-Type' => 'application/json; charset=utf-8'], json_encode([
         'error' => [
@@ -100,7 +99,7 @@ test('request server user errors', function () {
 
 test('request server errors', function () {
     $request = new GenerateContentRequest(
-        model: ModelType::GEMINI_PRO->value,
+        model: 'models/gemini-1.5-pro',
         parts: ['Test']
     );
     $response = new Response(400, ['Content-Type' => 'application/json'], json_encode([
@@ -127,7 +126,7 @@ test('request server errors', function () {
 });
 
 test('request client errors', function () {
-    $request = new ListModelRequest();
+    $request = new ListModelRequest;
 
     $this->client
         ->shouldReceive('sendRequest')
@@ -142,7 +141,7 @@ test('request client errors', function () {
 });
 
 test('request serialization errors', function () {
-    $request = new ListModelRequest();
+    $request = new ListModelRequest;
 
     $response = new Response(200, ['Content-Type' => 'application/json; charset=utf-8'], 'err');
 
@@ -157,7 +156,7 @@ test('request serialization errors', function () {
 
 test('request stream', function () {
     $request = new StreamGenerateContentRequest(
-        model: ModelType::GEMINI_PRO->value,
+        model: 'models/gemini-1.5-pro',
         parts: ['Test']
     );
 
@@ -173,7 +172,7 @@ test('request stream', function () {
                 ->and($request->getUri())
                 ->getHost()->toBe('generativelanguage.googleapis.com')
                 ->getScheme()->toBe('https')
-                ->getPath()->toBe('/v1/models/gemini-pro:streamGenerateContent');
+                ->getPath()->toBe('/v1beta/models/gemini-1.5-pro:streamGenerateContent');
 
             return true;
         })->andReturn($response);
@@ -186,7 +185,7 @@ test('request stream', function () {
 
 test('request stream server errors', function () {
     $request = new StreamGenerateContentRequest(
-        model: ModelType::GEMINI_PRO->value,
+        model: 'models/gemini-1.5-pro',
         parts: ['Test']
     );
 

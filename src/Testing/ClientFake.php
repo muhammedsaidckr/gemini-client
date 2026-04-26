@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Gemini\Testing;
 
+use BackedEnum;
 use Gemini\Contracts\ClientContract;
 use Gemini\Contracts\ResponseContract;
 use Gemini\Enums\ModelType;
 use Gemini\Responses\StreamResponse;
+use Gemini\Testing\FunctionCalls\TestFunctionCall;
 use Gemini\Testing\Requests\TestRequest;
+use Gemini\Testing\Resources\CachedContentsTestResource;
 use Gemini\Testing\Resources\ChatSessionTestResource;
 use Gemini\Testing\Resources\EmbeddingModelTestResource;
+use Gemini\Testing\Resources\FileSearchStoresTestResource;
+use Gemini\Testing\Resources\FilesTestResource;
 use Gemini\Testing\Resources\GenerativeModelTestResource;
 use Gemini\Testing\Resources\ModelTestResource;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -24,11 +29,11 @@ class ClientFake implements ClientContract
     private array $requests = [];
 
     /**
-     * @param  array<array-key, ResponseContract>  $responses
+     * @var array<array-key, TestFunctionCall>
      */
-    public function __construct(protected array $responses = [])
-    {
-    }
+    private array $functionCalls = [];
+
+    public function __construct(protected array $responses = []) {}
 
     /**
      * @param  array<array-key, ResponseContract>  $responses
@@ -38,7 +43,7 @@ class ClientFake implements ClientContract
         $this->responses = [...$this->responses, ...$responses];
     }
 
-    public function assertSent(string $resource, ModelType|string|null $model = null, callable|int|null $callback = null): void
+    public function assertSent(string $resource, BackedEnum|string|null $model = null, callable|int|null $callback = null): void
     {
         if (is_int($callback)) {
             $this->assertSentTimes(resource: $resource, model: $model, times: $callback);
@@ -52,7 +57,7 @@ class ClientFake implements ClientContract
         );
     }
 
-    private function assertSentTimes(string $resource, ModelType|string|null $model = null, int $times = 1): void
+    private function assertSentTimes(string $resource, BackedEnum|string|null $model = null, int $times = 1): void
     {
         $count = count($this->sent(resource: $resource, model: $model));
 
@@ -65,7 +70,7 @@ class ClientFake implements ClientContract
     /**
      * @return mixed[]
      */
-    private function sent(string $resource, ModelType|string|null $model = null, ?callable $callback = null): array
+    private function sent(string $resource, BackedEnum|string|null $model = null, ?callable $callback = null): array
     {
         if (! $this->hasSent(resource: $resource, model: $model)) {
             return [];
@@ -76,12 +81,12 @@ class ClientFake implements ClientContract
         return array_filter($this->resourcesOf(type: $resource), fn (TestRequest $request) => $callback($request->method(), $request->args()));
     }
 
-    private function hasSent(string $resource, ModelType|string|null $model = null): bool
+    private function hasSent(string $resource, BackedEnum|string|null $model = null): bool
     {
         return $this->resourcesOf(type: $resource, model: $model) !== [];
     }
 
-    public function assertNotSent(string $resource, ModelType|string|null $model = null, ?callable $callback = null): void
+    public function assertNotSent(string $resource, BackedEnum|string|null $model = null, ?callable $callback = null): void
     {
         PHPUnit::assertCount(
             0, $this->sent(resource: $resource, model: $model, callback: $callback),
@@ -102,7 +107,7 @@ class ClientFake implements ClientContract
     /**
      * @return array<array-key, TestRequest>
      */
-    private function resourcesOf(string $type, ModelType|string|null $model = null): array
+    private function resourcesOf(string $type, BackedEnum|string|null $model = null): array
     {
         return array_filter($this->requests, fn (TestRequest $request): bool => $request->resource() === $type && ($model === null || $request->model() === $model));
     }
@@ -127,34 +132,129 @@ class ClientFake implements ClientContract
         return $response;
     }
 
+    public function assertFunctionCalled(string $resource, BackedEnum|string|null $model = null, callable|int|null $callback = null): void
+    {
+        if (is_int($callback)) {
+            $this->assertFunctionCalledTimes(resource: $resource, model: $model, times: $callback);
+
+            return;
+        }
+
+        PHPUnit::assertTrue(
+            $this->functionCalled(resource: $resource, model: $model, callback: $callback) !== [],
+            "The expected [{$resource}] function was not called."
+        );
+    }
+
+    private function assertFunctionCalledTimes(string $resource, BackedEnum|string|null $model = null, int $times = 1): void
+    {
+        $count = count($this->functionCalled(resource: $resource, model: $model));
+
+        PHPUnit::assertSame(
+            $times, $count,
+            "The expected [{$resource}] resource was called {$count} times instead of {$times} times."
+        );
+    }
+
+    /**
+     * @return mixed[]
+     */
+    private function functionCalled(string $resource, BackedEnum|string|null $model = null, ?callable $callback = null): array
+    {
+        if (! $this->hasFunctionCalled(resource: $resource, model: $model)) {
+            return [];
+        }
+
+        $callback = $callback ?: fn (): bool => true;
+
+        return array_filter($this->resourcesOfFunctionCalls(type: $resource), fn (TestFunctionCall $functionCall) => $callback($functionCall->method(), $functionCall->args()));
+    }
+
+    private function hasFunctionCalled(string $resource, BackedEnum|string|null $model = null): bool
+    {
+        return $this->resourcesOfFunctionCalls(type: $resource, model: $model) !== [];
+    }
+
+    public function assertFunctionNotCalled(string $resource, BackedEnum|string|null $model = null, ?callable $callback = null): void
+    {
+        PHPUnit::assertCount(
+            0, $this->functionCalled(resource: $resource, model: $model, callback: $callback),
+            "The unexpected [{$resource}] function was called."
+        );
+    }
+
+    public function assertNoFunctionsCalled(): void
+    {
+        $resourceNames = implode(
+            separator: ', ',
+            array: array_map(fn (TestFunctionCall $functionCall): string => $functionCall->resource(), $this->functionCalls)
+        );
+
+        PHPUnit::assertEmpty($this->functionCalls, 'The following functions were called unexpectedly: '.$resourceNames);
+    }
+
+    /**
+     * @return array<array-key, TestFunctionCall>
+     */
+    private function resourcesOfFunctionCalls(string $type, BackedEnum|string|null $model = null): array
+    {
+        return array_filter($this->functionCalls, fn (TestFunctionCall $functionCall): bool => $functionCall->resource() === $type && ($model === null || $functionCall->model() === $model));
+    }
+
+    public function recordFunctionCall(TestFunctionCall $call): void
+    {
+        $this->functionCalls[] = $call;
+    }
+
     public function models(): ModelTestResource
     {
         return new ModelTestResource(fake: $this);
     }
 
-    public function generativeModel(ModelType|string $model): GenerativeModelTestResource
+    public function generativeModel(BackedEnum|string $model): GenerativeModelTestResource
     {
         return new GenerativeModelTestResource(fake: $this, model: $model);
 
     }
 
+    /**
+     * @deprecated Use `generativeModel()`
+     */
     public function geminiPro(): GenerativeModelTestResource
     {
         return $this->generativeModel(model: ModelType::GEMINI_PRO);
     }
 
-    public function geminiProVision(): GenerativeModelTestResource
+    /**
+     * @deprecated Use `generativeModel()`
+     */
+    public function geminiFlash(): GenerativeModelTestResource
     {
-        return $this->generativeModel(model: ModelType::GEMINI_PRO_VISION);
+        return $this->generativeModel(model: ModelType::GEMINI_FLASH);
     }
 
-    public function embeddingModel(ModelType|string $model = ModelType::EMBEDDING): EmbeddingModelTestResource
+    public function embeddingModel(BackedEnum|string $model): EmbeddingModelTestResource
     {
         return new EmbeddingModelTestResource(fake: $this, model: $model);
     }
 
-    public function chat(ModelType|string $model = ModelType::GEMINI_PRO): ChatSessionTestResource
+    public function chat(BackedEnum|string $model): ChatSessionTestResource
     {
         return new ChatSessionTestResource(fake: $this, model: $model);
+    }
+
+    public function files(): FilesTestResource
+    {
+        return new FilesTestResource(fake: $this);
+    }
+
+    public function cachedContents(): CachedContentsTestResource
+    {
+        return new CachedContentsTestResource(fake: $this);
+    }
+
+    public function fileSearchStores(): FileSearchStoresTestResource
+    {
+        return new FileSearchStoresTestResource(fake: $this);
     }
 }

@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Gemini;
 
+use BackedEnum;
 use Gemini\Contracts\ClientContract;
+use Gemini\Contracts\Resources\CachedContentsContract;
+use Gemini\Contracts\Resources\FilesContract;
+use Gemini\Contracts\Resources\FileSearchStoresContract;
+use Gemini\Contracts\Resources\GenerativeModelContract;
 use Gemini\Contracts\TransporterContract;
-use Gemini\Data\Blob;
-use Gemini\Data\Content;
-use Gemini\Data\Model;
 use Gemini\Enums\ModelType;
+use Gemini\Resources\CachedContents;
 use Gemini\Resources\ChatSession;
 use Gemini\Resources\EmbeddingModel;
+use Gemini\Resources\Files;
+use Gemini\Resources\FileSearchStores;
 use Gemini\Resources\GenerativeModel;
 use Gemini\Resources\Models;
 
@@ -20,9 +25,7 @@ final class Client implements ClientContract
     /**
      * Creates an instance with the given Transporter
      */
-    public function __construct(private readonly TransporterContract $transporter)
-    {
-    }
+    public function __construct(private readonly TransporterContract $transporter) {}
 
     /**
      *  Lists available models.
@@ -32,29 +35,28 @@ final class Client implements ClientContract
         return new Models(transporter: $this->transporter);
     }
 
-    public function generativeModel(ModelType|string $model): GenerativeModel
+    public function generativeModel(BackedEnum|string $model): GenerativeModel
     {
         return new GenerativeModel(transporter: $this->transporter, model: $model);
     }
 
-    public function generativeModelWithSystemInstruction(
-        ModelType|string $model,
-        string|Blob|array|Content $systemInstruction
-    ): GenerativeModel {
-        return new GenerativeModel(transporter: $this->transporter, model: $model, systemInstruction: $systemInstruction);
-    }
-
+    /**
+     * @deprecated Use `generativeModel()`
+     */
     public function geminiPro(): GenerativeModel
     {
         return $this->generativeModel(model: ModelType::GEMINI_PRO);
     }
 
-    public function geminiProVision(): GenerativeModel
+    /**
+     * @deprecated Use `generativeModel()`
+     */
+    public function geminiFlash(): GenerativeModelContract
     {
-        return $this->generativeModel(model: ModelType::GEMINI_PRO_VISION);
+        return $this->generativeModel(model: ModelType::GEMINI_FLASH);
     }
 
-    public function embeddingModel(ModelType|string $model = ModelType::EMBEDDING): EmbeddingModel
+    public function embeddingModel(BackedEnum|string $model): EmbeddingModel
     {
         return new EmbeddingModel(transporter: $this->transporter, model: $model);
     }
@@ -62,8 +64,28 @@ final class Client implements ClientContract
     /**
      * Contains an ongoing conversation with the model.
      */
-    public function chat(ModelType|string $model = ModelType::GEMINI_PRO): ChatSession
+    public function chat(BackedEnum|string $model): ChatSession
     {
         return new ChatSession(model: $this->generativeModel(model: $model));
+    }
+
+    /**
+     * Resource to manage media file uploads to be reused across multiple requests and prompts.
+     *
+     * @link https://ai.google.dev/api/files
+     */
+    public function files(): FilesContract
+    {
+        return new Files($this->transporter);
+    }
+
+    public function cachedContents(): CachedContentsContract
+    {
+        return new CachedContents($this->transporter);
+    }
+
+    public function fileSearchStores(): FileSearchStoresContract
+    {
+        return new FileSearchStores($this->transporter);
     }
 }
