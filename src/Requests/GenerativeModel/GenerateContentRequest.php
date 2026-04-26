@@ -30,7 +30,6 @@ class GenerateContentRequest extends Request
      */
     public function __construct(
         protected readonly string $model,
-        protected readonly array $systemInstruction,
         protected readonly array $parts,
         protected readonly array $safetySettings = [],
         protected readonly ?GenerationConfig $generationConfig = null,
@@ -53,7 +52,6 @@ class GenerateContentRequest extends Request
     protected function defaultBody(): array
     {
         return [
-            'system_instruction' => $this->systemInstruction,
             'contents' => array_map(
                 callback: static fn (Content $content): array => $content->toArray(),
                 array: $this->partsToContents(...$this->parts)
